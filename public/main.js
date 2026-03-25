@@ -8,8 +8,9 @@ const currentDateEl = document.getElementById('currentDate');
 const sortBtns = document.querySelectorAll('.sort-btn');
 
 // ── State ──
+let links = [];
 let sortField = 'date';
-let sortDir = 'desc'; // newest first
+let sortDir = 'desc';
 let query = '';
 let mouseX = 0, mouseY = 0;
 let previewVisible = false;
@@ -63,7 +64,6 @@ function render() {
   rows.forEach((link) => {
     const tr = document.createElement('tr');
 
-    // category cell — show only on first occurrence per group
     const categoryChanged = link.category !== lastCategory;
     const tdCat = document.createElement('td');
     tdCat.className = 'col-category';
@@ -84,11 +84,9 @@ function render() {
     tr.appendChild(tdDate);
     tr.appendChild(tdName);
 
-    // hover preview
     tr.addEventListener('mouseenter', () => showPreview(link));
     tr.addEventListener('mouseleave', hidePreview);
 
-    // click → open link
     tr.addEventListener('click', () => {
       if (link.url) window.open(link.url, '_blank');
     });
@@ -127,12 +125,7 @@ function positionPreview() {
   let x = mouseX + margin;
   let y = mouseY - ph / 2;
 
-  // flip left if near right edge
-  if (x + pw > vw - margin) {
-    x = mouseX - pw - margin;
-  }
-
-  // clamp vertically
+  if (x + pw > vw - margin) x = mouseX - pw - margin;
   if (y < margin) y = margin;
   if (y + ph > vh - margin) y = vh - ph - margin;
 
@@ -193,5 +186,13 @@ searchInput.addEventListener('input', (e) => {
   render();
 });
 
-// ── Init ──
-render();
+// ── Init: fetch data from API ──
+fetch('/api/links')
+  .then(res => res.json())
+  .then(data => {
+    links = data;
+    render();
+  })
+  .catch(err => {
+    console.error('Failed to load links:', err);
+  });
