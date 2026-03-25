@@ -178,7 +178,6 @@ table {
 }
 
 tbody tr {
-  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.1s;
 }
@@ -190,6 +189,12 @@ tbody tr:hover {
 td {
   padding: 10px 0;
   vertical-align: middle;
+}
+
+/* Borders only on date and name — never on category */
+.col-date,
+.col-name {
+  border-bottom: 1px solid var(--border);
 }
 
 /* category column */
