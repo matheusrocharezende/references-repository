@@ -3,7 +3,10 @@ const http  = require('http');
 const fs    = require('fs');
 const path  = require('path');
 
-const CACHE_FILE = path.join(__dirname, 'classifications.json');
+// Vercel filesystem is read-only except /tmp
+const CACHE_FILE = process.env.VERCEL
+  ? '/tmp/classifications.json'
+  : path.join(__dirname, 'classifications.json');
 
 function loadCache() {
   try { return JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8')); }
