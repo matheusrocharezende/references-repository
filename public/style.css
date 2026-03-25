@@ -26,6 +26,41 @@ html, body {
   overflow-x: hidden;
 }
 
+/* ── HERO ── */
+.hero {
+  width: 100%;
+  min-height: 38vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 40px 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-title {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(40px, 7.8vw, 130px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero-sub {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(9px, 0.7vw, 12px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hero-accent {
+  color: #e02020;
+}
+
 .container {
   display: flex;
   flex-direction: column;
