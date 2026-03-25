@@ -1,0 +1,256 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #141414;
+  --surface: #1c1c1c;
+  --border: #2a2a2a;
+  --text-primary: #d4d4d4;
+  --text-muted: #555;
+  --text-category: #444;
+  --accent: #d4d4d4;
+  --hover-bg: #1f1f1f;
+  --font: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 12px;
+  line-height: 1;
+  overflow-x: hidden;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.version {
+  font-size: 13px;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  min-width: 48px;
+}
+
+.sort-controls {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+}
+
+.sort-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.02em;
+  transition: color 0.15s;
+}
+
+.sort-btn.active {
+  color: var(--text-primary);
+}
+
+.sort-btn:hover {
+  color: var(--text-primary);
+}
+
+.sort-btn .arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.sort-btn.asc .arrow { transform: rotate(0deg); }
+.sort-btn.desc .arrow { transform: rotate(180deg); }
+
+.search-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.02em;
+  transition: color 0.15s;
+  margin-left: auto;
+}
+
+.search-btn:hover {
+  color: var(--text-primary);
+}
+
+/* ── SEARCH BAR ── */
+.search-bar {
+  display: none;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-bar.open {
+  display: block;
+}
+
+.search-bar input {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── TABLE ── */
+.table-wrapper {
+  flex: 1;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+tbody tr:hover {
+  background: var(--hover-bg);
+}
+
+td {
+  padding: 10px 0;
+  vertical-align: middle;
+}
+
+/* category column */
+.col-category {
+  color: var(--text-category);
+  font-size: 11px;
+  width: 100px;
+  padding-right: 16px;
+  letter-spacing: 0.04em;
+}
+
+/* date column */
+.col-date {
+  color: var(--text-muted);
+  width: 80px;
+  padding-right: 24px;
+  letter-spacing: 0.02em;
+}
+
+/* name column */
+.col-name {
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+  flex: 1;
+}
+
+/* hide repeated categories */
+.category-hidden {
+  visibility: hidden;
+}
+
+/* category separator row */
+tr.category-spacer td {
+  padding-top: 6px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ── FOOTER ── */
+.bottombar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.brand {
+  font-size: 13px;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.current-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+/* ── FLOATING PREVIEW ── */
+.preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+.preview.visible {
+  opacity: 1;
+}
+
+.preview img {
+  display: block;
+  width: 280px;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* no preview placeholder */
+.preview.no-image img {
+  display: none;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}

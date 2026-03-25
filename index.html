@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryptic List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <header class="topbar">
+      <span class="version">1.00</span>
+      <nav class="sort-controls">
+        <button class="sort-btn active" data-sort="date">date <span class="arrow">↑</span></button>
+        <button class="sort-btn" data-sort="name">name</button>
+      </nav>
+      <button class="search-btn" id="searchToggle">search</button>
+    </header>
+
+    <div class="search-bar" id="searchBar">
+      <input type="text" id="searchInput" placeholder="search links..." autocomplete="off">
+    </div>
+
+    <main class="table-wrapper">
+      <table id="linksTable">
+        <tbody id="tableBody"></tbody>
+      </table>
+    </main>
+
+    <footer class="bottombar">
+      <span class="brand">Cryptic List</span>
+      <span class="current-date" id="currentDate"></span>
+    </footer>
+
+  </div>
+
+  <!-- Floating preview -->
+  <div class="preview" id="preview">
+    <img id="previewImg" src="" alt="preview">
+  </div>
+
+  <script src="data.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
