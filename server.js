@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const https = require('https');
+const { classifyAll } = require('./classifier');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,11 +14,10 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 let cache = { data: null, ts: 0 };
 
-// ── Fetch CSV via https ──
+// ── Fetch CSV via https (follows redirects) ──
 function fetchCSV(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (res) => {
-      // Follow redirects (Google Sheets does a 302)
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return fetchCSV(res.headers.location).then(resolve).catch(reject);
       }
@@ -27,49 +28,42 @@ function fetchCSV(url) {
   });
 }
 
-// ── Parse name from URL ──
+// ── Derive display name from URL ──
 function nameFromUrl(url) {
   try {
     const hostname = new URL(url).hostname.replace(/^www\./, '');
-    const name = hostname.split('.')[0].replace(/-/g, ' ');
-    return name;
+    return hostname.split('.')[0].replace(/-/g, ' ');
   } catch {
     return url;
   }
 }
 
 // ── Parse CSV → links array ──
-// Supports columns: Type, Data, Name (optional), Link
-// Sparse rows: Type and Data are only filled on the first row of each group
+// Spreadsheet columns (in order): Data, Link
+// Type is assigned automatically by Claude. Name is derived from URL.
+// Sparse rows: Data is filled only on the first row of each group.
 function parseCSV(text) {
   const lines = text.trim().split('\n');
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
 
-  const typeIdx = headers.indexOf('type');
   const dateIdx = headers.indexOf('data');
-  const nameIdx = headers.indexOf('name');
   const linkIdx = headers.indexOf('link');
+  const nameIdx = headers.indexOf('name'); // optional column
 
-  let lastType = '';
   let lastDate = '';
 
   return lines.slice(1).map(line => {
-    // Basic CSV parse: split on commas, strip surrounding quotes
     const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
 
-    const rawType = typeIdx >= 0 ? cols[typeIdx] : '';
     const rawDate = dateIdx >= 0 ? cols[dateIdx] : '';
-    const rawName = nameIdx >= 0 ? cols[nameIdx] : '';
     const url     = linkIdx >= 0 ? cols[linkIdx] : '';
+    const rawName = nameIdx >= 0 ? cols[nameIdx] : '';
 
-    // Propagate sparse values
-    if (rawType) lastType = rawType;
     if (rawDate) lastDate = rawDate;
-
     if (!url) return null;
 
     return {
-      category: lastType.toLowerCase(),
+      category: '', // will be filled by classifier
       date:     lastDate,
       name:     rawName || nameFromUrl(url),
       url,
@@ -78,15 +72,20 @@ function parseCSV(text) {
   }).filter(Boolean);
 }
 
-// ── Fetch + cache links ──
+// ── Fetch, parse, classify, and cache links ──
 async function getLinks() {
   const now = Date.now();
   if (cache.data && now - cache.ts < CACHE_TTL) return cache.data;
 
+  console.log('[sheets] fetching CSV…');
   const csv = await fetchCSV(CSV_URL);
-  const data = parseCSV(csv);
+  const raw = parseCSV(csv);
+
+  console.log(`[classifier] classifying ${raw.length} links…`);
+  const data = await classifyAll(raw);
+
   cache = { data, ts: now };
-  console.log(`[sheets] fetched ${data.length} links`);
+  console.log(`[sheets] ready — ${data.length} links loaded`);
   return data;
 }
 
@@ -98,8 +97,8 @@ app.get('/api/links', async (req, res) => {
     const data = await getLinks();
     res.json(data);
   } catch (err) {
-    console.error('[sheets] error:', err.message);
-    res.status(500).json({ error: 'Failed to load links from Google Sheets' });
+    console.error('[error]', err.message);
+    res.status(500).json({ error: 'Failed to load links' });
   }
 });
 

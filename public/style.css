@@ -11,9 +11,14 @@
   --text-primary: #d4d4d4;
   --text-muted: #555;
   --text-category: #444;
+  --text-description: #3a3a3a;
   --accent: #d4d4d4;
   --hover-bg: #1f1f1f;
   --font: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+
+  /* Layout tokens — used to align hero title with date column */
+  --padding-x: 124px;
+  --type-col-w: 116px; /* col-category width(100px) + padding-right(16px) */
 }
 
 html, body {
@@ -33,7 +38,8 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 124px 48px;
+  /* Right stays at --padding-x; left is offset by type column so title aligns with date */
+  padding: 0 var(--padding-x) 48px calc(var(--padding-x) + var(--type-col-w));
   border-bottom: 1px solid var(--border);
 }
 
@@ -65,7 +71,7 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 0 124px;
+  padding: 0 var(--padding-x);
 }
 
 /* ── TOPBAR ── */
@@ -189,9 +195,10 @@ td {
   vertical-align: middle;
 }
 
-/* Borders only on date and name within a group */
+/* Borders on date, name, description within a group */
 .col-date,
-.col-name {
+.col-name,
+.col-description {
   border-bottom: 1px solid var(--border);
 }
 
@@ -221,7 +228,19 @@ tr.group-end .col-category {
 .col-name {
   color: var(--text-primary);
   letter-spacing: 0.01em;
-  flex: 1;
+  width: 220px;
+  padding-right: 32px;
+}
+
+/* description column */
+.col-description {
+  color: var(--text-description);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* hide repeated categories */

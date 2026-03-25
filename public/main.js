@@ -84,9 +84,14 @@ function render() {
     tdName.className = 'col-name';
     tdName.textContent = link.name;
 
+    const tdDesc = document.createElement('td');
+    tdDesc.className = 'col-description';
+    tdDesc.textContent = link.description || '';
+
     tr.appendChild(tdCat);
     tr.appendChild(tdDate);
     tr.appendChild(tdName);
+    tr.appendChild(tdDesc);
 
     tr.addEventListener('mouseenter', () => showPreview(link));
     tr.addEventListener('mouseleave', hidePreview);
