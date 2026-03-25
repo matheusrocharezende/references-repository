@@ -112,15 +112,19 @@ html, body {
   .topbar { gap: 32px; padding: 20px 0 16px; }
 }
 
+/* "type" label — hidden on mobile alongside col-category */
 .version {
-  font-size: 12px;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  min-width: 36px;
+  display: none;
 }
 
 @media (min-width: 768px) {
-  .version { font-size: 13px; min-width: 48px; }
+  .version {
+    display: inline;
+    font-size: 13px;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+    min-width: 48px;
+  }
 }
 
 .sort-controls {
@@ -233,29 +237,25 @@ tr.group-end .col-category {
   border-bottom: 1px solid var(--border);
 }
 
-/* category column */
+/* category column — hidden on mobile */
 .col-category {
-  color: var(--text-category);
-  font-size: 11px;
-  width: 0;
-  padding-right: 0;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
+  display: none;
 }
 
 @media (min-width: 768px) {
   .col-category {
+    display: table-cell;
+    color: var(--text-category);
+    font-size: 11px;
     width: 80px;
     padding-right: 16px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 }
 
 @media (min-width: 1100px) {
-  .col-category {
-    width: 100px;
-    padding-right: 16px;
-  }
+  .col-category { width: 100px; }
 }
 
 /* date column */
