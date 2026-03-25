@@ -191,9 +191,14 @@ td {
   vertical-align: middle;
 }
 
-/* Borders only on date and name — never on category */
+/* Borders only on date and name within a group */
 .col-date,
 .col-name {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Last row of each group: full border including category column */
+tr.group-end .col-category {
   border-bottom: 1px solid var(--border);
 }
 

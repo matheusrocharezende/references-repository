@@ -61,8 +61,12 @@ function render() {
 
   let lastCategory = null;
 
-  rows.forEach((link) => {
+  rows.forEach((link, i) => {
     const tr = document.createElement('tr');
+
+    // Is this the last row of its category group?
+    const isGroupEnd = i === rows.length - 1 || rows[i + 1].category !== link.category;
+    if (isGroupEnd) tr.classList.add('group-end');
 
     const categoryChanged = link.category !== lastCategory;
     const tdCat = document.createElement('td');
