@@ -56,9 +56,9 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 var(--padding-x) 40px calc(var(--padding-x) + var(--type-col-w));
-  /* Account for iOS safe area on notched devices */
-  padding-left: calc(var(--padding-x) + var(--type-col-w) + env(safe-area-inset-left, 0px));
+  padding-top: 0;
+  padding-bottom: 40px;
+  padding-left: calc(var(--padding-x) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--padding-x) + env(safe-area-inset-right, 0px));
   border-bottom: 1px solid var(--border);
 }
