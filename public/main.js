@@ -96,9 +96,14 @@ function render() {
 }
 
 // ── Preview ──
+function screenshotUrl(url) {
+  return `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&embed=screenshot.url`;
+}
+
 function showPreview(link) {
-  if (link.preview) {
-    previewImg.src = link.preview;
+  const src = link.preview || (link.url ? screenshotUrl(link.url) : '');
+  if (src) {
+    previewImg.src = src;
     preview.classList.remove('no-image');
     previewImg.style.display = 'block';
   } else {
@@ -119,13 +124,12 @@ function positionPreview() {
   const pw = 280;
   const ph = 200;
   const margin = 20;
-  const vw = window.innerWidth;
   const vh = window.innerHeight;
 
-  let x = mouseX + margin;
+  const x = mouseX + margin;
   let y = mouseY - ph / 2;
 
-  if (x + pw > vw - margin) x = mouseX - pw - margin;
+  // Always to the right — only clamp vertically
   if (y < margin) y = margin;
   if (y + ph > vh - margin) y = vh - ph - margin;
 
