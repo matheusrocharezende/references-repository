@@ -39,8 +39,8 @@ function nameFromUrl(url) {
 }
 
 // ── Parse CSV → links array ──
-// Spreadsheet columns (in order): Data, Link
-// Type is assigned automatically by Claude. Name is derived from URL.
+// Spreadsheet columns: Data, Link (required) + Name, Type (optional overrides)
+// If Type is filled in the sheet, it overrides Claude's auto-classification.
 // Sparse rows: Data is filled only on the first row of each group.
 function parseCSV(text) {
   const lines = text.trim().split('\n');
@@ -48,7 +48,8 @@ function parseCSV(text) {
 
   const dateIdx = headers.indexOf('data');
   const linkIdx = headers.indexOf('link');
-  const nameIdx = headers.indexOf('name'); // optional column
+  const nameIdx = headers.indexOf('name'); // optional
+  const typeIdx = headers.indexOf('type'); // optional manual override
 
   let lastDate = '';
 
@@ -58,12 +59,13 @@ function parseCSV(text) {
     const rawDate = dateIdx >= 0 ? cols[dateIdx] : '';
     const url     = linkIdx >= 0 ? cols[linkIdx] : '';
     const rawName = nameIdx >= 0 ? cols[nameIdx] : '';
+    const rawType = typeIdx >= 0 ? cols[typeIdx].toLowerCase() : '';
 
     if (rawDate) lastDate = rawDate;
     if (!url) return null;
 
     return {
-      category: '', // will be filled by classifier
+      category: rawType, // manual override; classifier won't touch it if set
       date:     lastDate,
       name:     rawName || nameFromUrl(url),
       url,

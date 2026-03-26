@@ -194,7 +194,7 @@ async function classifyAll(links) {
         const meta = await fetchSiteMeta(link.url);
         link.name        = link.name || meta.name;
         link.description = meta.description;
-        link.category    = meta.category;
+        link.category    = link.category || meta.category; // manual override takes priority
       }
       return link;
     })
