@@ -112,26 +112,29 @@ html, body {
   .topbar { gap: 32px; padding: 20px 0 16px; }
 }
 
-/* "type" label — hidden on mobile alongside col-category */
+/* "type" label — visible on all sizes */
 .version {
-  display: none;
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  /* mobile: col-category(80px) - topbar gap(16px) = 64px */
+  width: 64px;
+  flex-shrink: 0;
 }
 
 @media (min-width: 768px) {
   .version {
-    display: block;
     font-size: 13px;
     color: var(--text-primary);
-    letter-spacing: 0.02em;
-    /* col-category total footprint(80px) - topbar gap(32px) = 48px */
+    /* col-category(80px) - topbar gap(32px) = 48px */
     width: 48px;
-    flex-shrink: 0;
   }
 }
 
 @media (min-width: 1100px) {
   .version {
-    /* col-category total footprint(100px) - topbar gap(32px) = 68px */
+    /* col-category(100px) - topbar gap(32px) = 68px */
     width: 68px;
   }
 }
@@ -160,14 +163,14 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* date button width = col-date content width (col width - padding-right)
-   so that btn(56px) + sort-gap(16/24px) = col-date total footprint */
+/* date button — hidden on mobile (col-date is hidden there) */
 .sort-btn[data-sort="date"] {
-  width: 56px; /* 72px col - 16px padding-right = 56px content */
+  display: none;
 }
 
 @media (min-width: 768px) {
   .sort-btn[data-sort="date"] {
+    display: inline-block;
     width: 56px; /* 80px col - 24px padding-right = 56px content */
   }
 }
@@ -259,38 +262,35 @@ tr.group-end .col-category {
   border-bottom: 1px solid var(--border);
 }
 
-/* category column — hidden on mobile */
+/* category column — visible on mobile, stays on tablet+ */
 .col-category {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .col-category {
-    display: table-cell;
-    color: var(--text-category);
-    font-size: 11px;
-    width: 80px;
-    padding-right: 16px;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
+  display: table-cell;
+  color: var(--text-category);
+  font-size: 11px;
+  width: 80px;
+  padding-right: 16px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 @media (min-width: 1100px) {
   .col-category { width: 100px; }
 }
 
-/* date column */
+/* date column — hidden on mobile */
 .col-date {
-  color: var(--text-muted);
-  width: 72px;
-  padding-right: 16px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
+  display: none;
 }
 
 @media (min-width: 768px) {
-  .col-date { width: 80px; padding-right: 24px; }
+  .col-date {
+    display: table-cell;
+    color: var(--text-muted);
+    width: 80px;
+    padding-right: 24px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
 }
 
 /* name column */
