@@ -42,13 +42,18 @@ function getFiltered() {
   }
 
   result.sort((a, b) => {
-    let cmp = 0;
+    // Primary: always group by category alphabetically
+    const catCmp = (a.category || '').localeCompare(b.category || '');
+    if (catCmp !== 0) return catCmp;
+
+    // Secondary: sort within each group by selected field
     if (sortField === 'date') {
-      cmp = parseDate(a.date) - parseDate(b.date);
+      const cmp = parseDate(a.date) - parseDate(b.date);
+      return sortDir === 'asc' ? cmp : -cmp;
     } else {
-      cmp = a.name.localeCompare(b.name);
+      const cmp = a.name.localeCompare(b.name);
+      return sortDir === 'asc' ? cmp : -cmp;
     }
-    return sortDir === 'asc' ? cmp : -cmp;
   });
 
   return result;

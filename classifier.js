@@ -1,7 +1,8 @@
-const https = require('https');
-const http  = require('http');
-const fs    = require('fs');
-const path  = require('path');
+const https    = require('https');
+const http     = require('http');
+const fs       = require('fs');
+const path     = require('path');
+const Anthropic = require('@anthropic-ai/sdk');
 
 // Vercel filesystem is read-only except /tmp
 const CACHE_FILE = process.env.VERCEL
@@ -37,7 +38,7 @@ function nameFromUrl(url) {
   } catch { return url; }
 }
 
-// ── Fetch only the <head> of a page (first 20KB, follows redirects) ──
+// ── Fetch only the <head> of a page (first 25KB, follows redirects) ──
 function fetchHead(url, redirects = 5) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
@@ -63,12 +64,12 @@ function fetchHead(url, redirects = 5) {
         body += chunk;
         if (body.includes('</head>') || body.length > 25000) {
           done(body);
-          res.destroy(); // stop reading but don't trigger req error
+          res.destroy();
         }
       });
       res.on('end',   () => done(body));
       res.on('close', () => done(body));
-      res.on('error', () => done(body)); // partial body is fine
+      res.on('error', () => done(body));
     });
     req.on('timeout', () => { req.destroy(); fail(new Error('timeout')); });
     req.on('error',   (err) => fail(err));
@@ -84,32 +85,61 @@ function getMeta(html, ...patterns) {
   return '';
 }
 
-// ── Infer category from page content ──
-const CATEGORY_KEYWORDS = {
-  agency:     ['agency', 'advertising', 'creative agency', 'digital agency'],
-  studio:     ['studio', 'design studio', 'independent studio'],
-  gallery:    ['gallery', 'showcase', 'collection', 'inspiration', 'curated'],
-  brand:      ['brand', 'brand identity', 'brand guidelines', 'visual identity'],
-  strategy:   ['strategy', 'product strategy', 'consulting', 'advisor'],
-  tool:       ['tool', 'app', 'software', 'platform', 'saas'],
-  resource:   ['resource', 'library', 'reference', 'documentation'],
-  portfolio:  ['portfolio', 'work', 'case studies', 'projects'],
-  blog:       ['blog', 'articles', 'writing', 'posts', 'journal'],
-};
+// ── Claude-powered description + classification ──
+const anthropic = new Anthropic();
 
-function inferCategory(text) {
-  const lower = text.toLowerCase();
-  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) return cat;
+const VALID_CATEGORIES = ['agency', 'studio', 'brand', 'gallery', 'tool', 'resource', 'portfolio', 'blog', 'strategy'];
+
+async function enrichWithClaude(name, rawDescription, url) {
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 80,
+      messages: [{
+        role: 'user',
+        content: `You are analyzing a design/creative website. Return a JSON object with exactly two keys: "description" and "category".
+
+Rules:
+- "description": one short sentence (max 60 chars) describing what the site is or does. Be specific and concise.
+- "category": exactly one of: agency, studio, brand, gallery, tool, resource, portfolio, blog, strategy
+  - agency: creative/advertising/digital agency
+  - studio: independent design or creative studio
+  - brand: brand identity, brand guidelines, visual identity
+  - gallery: curated inspiration, showcases, design collections
+  - tool: apps, software, SaaS, design tools
+  - resource: libraries, templates, references, documentation
+  - portfolio: personal portfolio, case studies
+  - blog: articles, writing, journals
+  - strategy: consulting, product strategy, advisory
+
+Site name: ${name}
+URL: ${url}
+Raw meta: ${rawDescription || 'n/a'}
+
+Reply with only the JSON object, no other text.`
+      }]
+    });
+
+    let text = response.content[0].text.trim();
+    // Extract JSON object robustly — handles markdown fences or extra text
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON object found in response');
+    const parsed = JSON.parse(jsonMatch[0]);
+    const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'resource';
+    const description = (parsed.description || '').slice(0, 80);
+    console.log(`[claude] "${category}" | "${description.slice(0, 40)}"`);
+    return { description, category };
+  } catch (err) {
+    console.warn(`[claude] enrichment failed for ${url}: ${err.message}`);
+    return { description: rawDescription.slice(0, 80), category: '' };
   }
-  return '';
 }
 
-// ── Main: fetch site metadata ──
+// ── Main: fetch site metadata + classify with Claude ──
 async function fetchSiteMeta(url) {
   const cache = loadCache();
   const cached = cache[url];
-  if (cached && cached.name && cached.description !== undefined) {
+  if (cached && cached.name && cached.category) {
     console.log(`[meta] cache hit: ${url}`);
     return cached;
   }
@@ -134,24 +164,24 @@ async function fetchSiteMeta(url) {
       /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i,
       /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i
     );
-    const description = rawDesc.slice(0, 64);
-
-    // Category: infer from combined text
-    const combined = [name, description, titleTag].join(' ');
-    const category = inferCategory(combined);
+    // Description + Category: Claude API (single call)
+    const { description, category } = await enrichWithClaude(name, rawDesc.slice(0, 200), url);
 
     const result = { name, description, category };
-    console.log(`[meta] ${url} → "${name}" | "${description}" | ${category || '—'}`);
+    console.log(`[meta] ${url} → "${name}" | "${description.slice(0, 40)}" | ${category || '—'}`);
 
-    cache[url] = result;
-    saveCache(cache);
+    // Reload cache before saving to avoid race condition with parallel fetches
+    const freshCache = loadCache();
+    freshCache[url] = result;
+    saveCache(freshCache);
     return result;
 
   } catch (err) {
     console.warn(`[meta] failed ${url}: ${err.message}`);
     const fallback = { name: nameFromUrl(url), description: '', category: '' };
-    cache[url] = fallback;
-    saveCache(cache);
+    const freshCache = loadCache();
+    freshCache[url] = fallback;
+    saveCache(freshCache);
     return fallback;
   }
 }
