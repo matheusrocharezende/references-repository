@@ -71,6 +71,7 @@ html, body {
   letter-spacing: -0.02em;
   color: #ffffff;
   text-transform: uppercase;
+  text-wrap: pretty;
   margin-bottom: 16px;
 }
 
