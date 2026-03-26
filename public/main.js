@@ -4,7 +4,6 @@ const previewImg = document.getElementById('previewImg');
 const searchToggle = document.getElementById('searchToggle');
 const searchBar = document.getElementById('searchBar');
 const searchInput = document.getElementById('searchInput');
-const currentDateEl = document.getElementById('currentDate');
 const sortBtns = document.querySelectorAll('.sort-btn');
 
 // ── State ──
@@ -14,13 +13,6 @@ let sortDir = 'desc';
 let query = '';
 let mouseX = 0, mouseY = 0;
 let previewVisible = false;
-
-// ── Footer date ──
-const now = new Date();
-currentDateEl.textContent = now.toLocaleDateString('en-US', {
-  month: 'long',
-  year: 'numeric'
-});
 
 // ── Parse date "MM/YYYY" → comparable number ──
 function parseDate(str) {
