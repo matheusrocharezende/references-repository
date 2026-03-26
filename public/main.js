@@ -33,12 +33,15 @@ function getFiltered() {
     );
   }
 
-  result.sort((a, b) => {
-    // Primary: always group by category alphabetically
-    const catCmp = (a.category || '').localeCompare(b.category || '');
-    if (catCmp !== 0) return catCmp;
+  // Only group by category when the category column is visible (tablet+)
+  const groupByCategory = window.innerWidth >= 768;
 
-    // Secondary: sort within each group by selected field
+  result.sort((a, b) => {
+    if (groupByCategory) {
+      const catCmp = (a.category || '').localeCompare(b.category || '');
+      if (catCmp !== 0) return catCmp;
+    }
+
     if (sortField === 'date') {
       const cmp = parseDate(a.date) - parseDate(b.date);
       return sortDir === 'asc' ? cmp : -cmp;
@@ -195,6 +198,9 @@ searchInput.addEventListener('input', (e) => {
   query = e.target.value.trim();
   render();
 });
+
+// ── Re-render on resize (mobile ↔ tablet breakpoint) ──
+window.addEventListener('resize', render);
 
 // ── Init: fetch data from API ──
 fetch('/api/links')
