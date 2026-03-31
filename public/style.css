@@ -251,8 +251,16 @@ tbody tr {
 tbody tr:hover { background: var(--hover-bg); }
 
 td {
-  padding: 10px 0;
+  padding: 30px 0;
   vertical-align: middle;
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  td {
+    padding: 10px 0;
+    font-size: 13px;
+  }
 }
 
 /* Borders on date, name, description within a group */
