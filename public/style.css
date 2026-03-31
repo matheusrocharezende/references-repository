@@ -120,7 +120,7 @@ html, body {
 /* "type" label — visible on all sizes */
 .version {
   display: block;
-  font-size: 12px;
+  font-size: 16px;
   color: var(--text-muted);
   letter-spacing: 0.02em;
   /* mobile: col-category(80px) - topbar gap(16px) = 64px */
@@ -159,7 +159,7 @@ html, body {
   border: none;
   color: var(--text-muted);
   font-family: var(--font);
-  font-size: 12px;
+  font-size: 16px;
   cursor: pointer;
   padding: 0;
   text-align: left;
@@ -174,9 +174,15 @@ html, body {
 }
 
 @media (min-width: 768px) {
+  .sort-btn {
+    font-size: 12px;
+  }
   .sort-btn[data-sort="date"] {
     display: inline-block;
     width: 56px; /* 80px col - 24px padding-right = 56px content */
+  }
+  .version {
+    font-size: 13px;
   }
 }
 
