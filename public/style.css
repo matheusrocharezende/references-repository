@@ -375,6 +375,66 @@ tr.group-end .col-category {
 
 .preview.no-image img { display: none; }
 
+/* ── MOBILE SCROLL PREVIEW ── */
+#mob-preview {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* Preview image — fixed right side, vertically centred */
+  #mob-preview {
+    display: block;
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 54vw;
+    height: calc(54vw * 0.5625); /* 16:9 */
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  #mob-preview.loaded { opacity: 1; }
+
+  /* Name colour transitions */
+  .col-name { transition: color 0.25s ease, opacity 0.25s ease; }
+
+  /* Active row — bright white */
+  tbody tr.mob-active .col-name {
+    color: #fff !important;
+    opacity: 1 !important;
+  }
+
+  /* Inactive rows — dimmed */
+  tbody tr:not(.mob-active) .col-name {
+    color: #444 !important;
+    opacity: 0.6;
+  }
+
+  /* Type column — sticky left so it stays visible */
+  .col-category {
+    position: sticky;
+    left: 0;
+    background: var(--bg);
+    z-index: 2;
+  }
+
+  /* Hero — sticky at top on mobile */
+  .hero {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    background: var(--bg);
+    min-height: unset;
+    padding-top: 32px;
+    padding-bottom: 24px;
+  }
+}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

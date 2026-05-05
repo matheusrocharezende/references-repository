@@ -90,6 +90,8 @@ function render() {
     tr.appendChild(tdName);
     tr.appendChild(tdDesc);
 
+    tr.dataset.url = link.url || '';
+
     tr.addEventListener('mouseenter', () => showPreview(link));
     tr.addEventListener('mouseleave', hidePreview);
 
@@ -99,6 +101,13 @@ function render() {
 
     tableBody.appendChild(tr);
   });
+
+  // Re-trigger mobile active detection after re-render
+  if (window.innerWidth < 768) {
+    mobActiveRow = null;
+    const first = tableBody.querySelector('tr[data-url]');
+    if (first) setMobActive(first);
+  }
 }
 
 // ── Preview ──
@@ -195,6 +204,55 @@ searchInput.addEventListener('input', (e) => {
   query = e.target.value.trim();
   render();
 });
+
+// ── Mobile scroll preview ──
+let mobActiveRow = null;
+let mobPreviewTimer = null;
+let mobScrollRaf = null;
+const mobPreviewEl = document.getElementById('mob-preview');
+
+function findCenterRow() {
+  const vc = window.innerHeight / 2;
+  let best = null, bestDist = Infinity;
+  document.querySelectorAll('tbody tr[data-url]').forEach(tr => {
+    const r = tr.getBoundingClientRect();
+    const cy = r.top + r.height / 2;
+    const d = Math.abs(cy - vc);
+    if (d < bestDist) { bestDist = d; best = tr; }
+  });
+  return best;
+}
+
+function setMobActive(tr) {
+  if (!tr || tr === mobActiveRow) return;
+  if (mobActiveRow) mobActiveRow.classList.remove('mob-active');
+  tr.classList.add('mob-active');
+  mobActiveRow = tr;
+
+  clearTimeout(mobPreviewTimer);
+  mobPreviewTimer = setTimeout(() => {
+    const url = tr.dataset.url;
+    if (!url || !mobPreviewEl) return;
+    const src = screenshotUrl(url);
+    const img = new Image();
+    img.onload = () => {
+      mobPreviewEl.style.backgroundImage = `url('${src}')`;
+      mobPreviewEl.classList.add('loaded');
+    };
+    img.src = src;
+  }, 250);
+}
+
+function onMobScroll() {
+  if (window.innerWidth >= 768) return;
+  if (mobScrollRaf) cancelAnimationFrame(mobScrollRaf);
+  mobScrollRaf = requestAnimationFrame(() => {
+    const row = findCenterRow();
+    if (row) setMobActive(row);
+  });
+}
+
+window.addEventListener('scroll', onMobScroll, { passive: true });
 
 // ── Init: fetch data from API ──
 fetch('/api/links')
