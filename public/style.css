@@ -120,7 +120,7 @@ html, body {
 /* "type" label — visible on all sizes */
 .version {
   display: block;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--text-muted);
   letter-spacing: 0.02em;
   /* mobile: col-category(80px) - topbar gap(16px) = 64px */
@@ -130,7 +130,7 @@ html, body {
 
 @media (min-width: 768px) {
   .version {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-primary);
     /* col-category(80px) - topbar gap(32px) = 48px */
     width: 48px;
@@ -159,7 +159,7 @@ html, body {
   border: none;
   color: var(--text-muted);
   font-family: var(--font);
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   padding: 0;
   text-align: left;
@@ -175,14 +175,11 @@ html, body {
 
 @media (min-width: 768px) {
   .sort-btn {
-    font-size: 12px;
+    font-size: 14px;
   }
   .sort-btn[data-sort="date"] {
     display: inline-block;
     width: 56px; /* 80px col - 24px padding-right = 56px content */
-  }
-  .version {
-    font-size: 13px;
   }
 }
 
@@ -202,7 +199,7 @@ html, body {
   border: none;
   color: var(--text-muted);
   font-family: var(--font);
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   padding: 0;
   letter-spacing: 0.02em;
@@ -232,11 +229,11 @@ html, body {
   font-size: 12px;
   letter-spacing: 0.02em;
   /* Prevent iOS zoom on focus */
-  font-size: max(16px, 12px);
+  font-size: max(16px, 14px);
 }
 
 @media (min-width: 768px) {
-  .search-bar input { font-size: 12px; }
+  .search-bar input { font-size: 14px; }
 }
 
 .search-bar input::placeholder { color: var(--text-muted); }
@@ -259,13 +256,13 @@ tbody tr:hover { background: var(--hover-bg); }
 td {
   padding: 30px 0;
   vertical-align: middle;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 @media (min-width: 768px) {
   td {
     padding: 10px 0;
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
