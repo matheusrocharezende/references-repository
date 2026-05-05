@@ -8,8 +8,8 @@ const sortBtns = document.querySelectorAll('.sort-btn');
 
 // ── State ──
 let links = [];
-let sortField = 'date';
-let sortDir = 'desc';
+let sortField = 'type';
+let sortDir = 'asc';
 let query = '';
 let mouseX = 0, mouseY = 0;
 let previewVisible = false;
@@ -34,18 +34,18 @@ function getFiltered() {
   }
 
   result.sort((a, b) => {
-    // Primary: always group by category alphabetically
+    // Primary: group by category (direction controlled by type sort)
     const catCmp = (a.category || '').localeCompare(b.category || '');
-    if (catCmp !== 0) return catCmp;
+    if (catCmp !== 0) return sortField === 'type' && sortDir === 'desc' ? -catCmp : catCmp;
 
-    // Secondary: sort within each group by selected field
-    if (sortField === 'date') {
-      const cmp = parseDate(a.date) - parseDate(b.date);
-      return sortDir === 'asc' ? cmp : -cmp;
-    } else {
+    // Secondary: sort within group by name (when name sort active)
+    if (sortField === 'name') {
       const cmp = a.name.localeCompare(b.name);
       return sortDir === 'asc' ? cmp : -cmp;
     }
+
+    // Default within-group order: keep original
+    return 0;
   });
 
   return result;
@@ -159,6 +159,22 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // ── Sort ──
+function updateSortUI() {
+  sortBtns.forEach(b => {
+    b.classList.remove('active', 'asc', 'desc');
+    const arrow = b.querySelector('.arrow');
+    if (arrow) arrow.remove();
+  });
+  const activeBtn = document.querySelector(`.sort-btn[data-sort="${sortField}"]`);
+  if (activeBtn) {
+    activeBtn.classList.add('active', sortDir);
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.textContent = sortDir === 'asc' ? ' ↑' : ' ↓';
+    activeBtn.appendChild(arrow);
+  }
+}
+
 sortBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     const field = btn.dataset.sort;
@@ -166,27 +182,15 @@ sortBtns.forEach(btn => {
       sortDir = sortDir === 'asc' ? 'desc' : 'asc';
     } else {
       sortField = field;
-      sortDir = field === 'date' ? 'desc' : 'asc';
+      sortDir = 'asc';
     }
-
-    sortBtns.forEach(b => {
-      b.classList.remove('active', 'asc', 'desc');
-      b.querySelector('.arrow') && (b.querySelector('.arrow').textContent = '↑');
-    });
-
-    btn.classList.add('active', sortDir);
-    let arrowEl = btn.querySelector('.arrow');
-    if (!arrowEl) {
-      arrowEl = document.createElement('span');
-      arrowEl.className = 'arrow';
-      btn.appendChild(document.createTextNode(' '));
-      btn.appendChild(arrowEl);
-    }
-    arrowEl.textContent = sortDir === 'asc' ? '↑' : '↓';
-
+    updateSortUI();
     render();
   });
 });
+
+// Set initial active state on "type" button
+updateSortUI();
 
 // ── Search ──
 searchToggle.addEventListener('click', () => {
