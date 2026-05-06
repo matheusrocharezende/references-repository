@@ -117,24 +117,28 @@ html, body {
   .topbar { gap: 32px; padding: 20px 0 16px; }
 }
 
-/* "type" sort button — left anchor, aligns with col-category */
-.sort-btn.version {
+/* "type" label — visible on all sizes */
+.version {
+  display: block;
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
   /* mobile: col-category(80px) - topbar gap(16px) = 64px */
   width: 64px;
   flex-shrink: 0;
-  text-align: left;
 }
 
 @media (min-width: 768px) {
-  .sort-btn.version {
+  .version {
+    font-size: 14px;
+    color: var(--text-primary);
     /* col-category(80px) - topbar gap(32px) = 48px */
     width: 48px;
-    color: var(--text-primary);
   }
 }
 
 @media (min-width: 1100px) {
-  .sort-btn.version {
+  .version {
     /* col-category(100px) - topbar gap(32px) = 68px */
     width: 68px;
   }
@@ -164,9 +168,18 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* date button — hidden on mobile (col-date is hidden there) */
+.sort-btn[data-sort="date"] {
+  display: none;
+}
+
 @media (min-width: 768px) {
   .sort-btn {
     font-size: 14px;
+  }
+  .sort-btn[data-sort="date"] {
+    display: inline-block;
+    width: 56px; /* 80px col - 24px padding-right = 56px content */
   }
 }
 
