@@ -74,6 +74,11 @@ async function addLink() {
 
     const data = await res.json();
 
+    if (res.status === 409) {
+      setStatus(`already added — ${data.name}\n${data.category || '—'}`, 'warn');
+      return;
+    }
+
     if (!res.ok) {
       setStatus(data.error || 'error', 'error');
       return;

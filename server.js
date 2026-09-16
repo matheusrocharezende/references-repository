@@ -95,6 +95,22 @@ app.post('/api/admin/links', async (req, res) => {
     `${String(new Date().getMonth() + 1).padStart(2, '0')}/${new Date().getFullYear()}`;
 
   try {
+    const { data: existing, error: lookupError } = await supabaseAdmin
+      .from('links')
+      .select('name, category')
+      .eq('url', url)
+      .maybeSingle();
+    if (lookupError) throw lookupError;
+
+    if (existing) {
+      return res.status(409).json({
+        error: 'Link already exists',
+        existing: true,
+        name: existing.name,
+        category: existing.category
+      });
+    }
+
     const [enriched] = await classifyAll([{ category: '', date, name: '', url, preview: '' }]);
 
     const row = {
