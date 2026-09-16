@@ -67,6 +67,17 @@ app.get('/api/links', async (req, res) => {
   }
 });
 
+// ── Admin: verify password (gates the add-link screen client-side) ──
+app.post('/api/admin/verify', (req, res) => {
+  if (!process.env.ADMIN_PASSWORD) {
+    return res.status(500).json({ error: 'Admin add-link is not configured' });
+  }
+  if (req.body.password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Wrong password' });
+  }
+  res.json({ ok: true });
+});
+
 // ── Admin: add a single link (fetches metadata + classifies with Claude, then saves) ──
 app.post('/api/admin/links', async (req, res) => {
   if (!process.env.ADMIN_PASSWORD || !supabaseAdmin) {

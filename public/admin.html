@@ -6,39 +6,66 @@
   <title>Add link — Matheus Rocha</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    body { overflow-x: initial; }
-    .admin {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 48px var(--padding-x);
+    html, body { overflow-x: initial; }
+
+    .screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+    }
+
+    [hidden] { display: none !important; }
+
+    /* ── login ── */
+    .mark {
+      width: 8px;
+      height: 8px;
+      background: #e02020;
+      border-radius: 50%;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 320px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
-    .admin h1 {
+
+    .login-title {
       font-family: var(--font);
-      font-size: 16px;
+      font-size: 14px;
       color: var(--text-primary);
       letter-spacing: 0.02em;
-      margin-bottom: 4px;
+      text-align: center;
     }
-    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+
     .field label {
       font-size: 11px;
       color: var(--text-muted);
       letter-spacing: 0.04em;
     }
+
     .field input {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text-primary);
       font-family: var(--font);
       font-size: max(16px, 14px);
-      padding: 10px 12px;
+      padding: 12px 14px;
       outline: none;
+      transition: border-color 0.15s;
     }
+
     .field input:focus { border-color: var(--text-muted); }
-    .admin button {
+
+    .login-card button {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text-primary);
@@ -47,38 +74,79 @@
       letter-spacing: 0.02em;
       padding: 12px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .admin button:hover { background: var(--hover-bg); }
-    .admin button:disabled { opacity: 0.5; cursor: default; }
-    .status { font-size: 12px; line-height: 1.5; min-height: 1.5em; white-space: pre-line; }
-    .status.error { color: #e02020; }
-    .status.ok { color: #6fbf73; }
-    .status .row { color: var(--text-muted); }
+
+    .login-card button:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+    .login-card button:disabled { opacity: 0.5; cursor: default; }
+
+    .login-error {
+      font-size: 11px;
+      color: #e02020;
+      text-align: center;
+      min-height: 1em;
+    }
+
+    /* ── add-link (post login) ── */
+    .add-screen {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .link-input {
+      width: 100%;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: max(16px, 16px);
+      letter-spacing: 0.01em;
+      padding: 8px 0;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    .link-input::placeholder { color: var(--text-muted); }
+    .link-input:focus { border-color: var(--text-muted); }
+
+    .add-status {
+      font-size: 12px;
+      line-height: 1.5;
+      min-height: 1.5em;
+      white-space: pre-line;
+      text-align: center;
+    }
+
+    .add-status.error { color: #e02020; }
+    .add-status.ok { color: #6fbf73; }
   </style>
 </head>
 <body>
-  <div class="admin">
-    <h1>add link</h1>
 
-    <div class="field">
-      <label for="url">url</label>
-      <input type="url" id="url" placeholder="https://..." autocomplete="off" required>
+  <section class="screen" id="loginScreen">
+    <div class="mark"></div>
+    <div class="login-card">
+      <div class="login-title">sign in</div>
+      <div class="field">
+        <label for="password">password</label>
+        <input type="password" id="password" autocomplete="current-password" autofocus>
+      </div>
+      <button id="signInBtn">sign in</button>
+      <div class="login-error" id="loginError"></div>
     </div>
+  </section>
 
-    <div class="field">
-      <label for="date">date (mm/yyyy)</label>
-      <input type="text" id="date" placeholder="09/2026" autocomplete="off">
+  <section class="screen" id="addScreen" hidden>
+    <div class="add-screen">
+      <input type="url" class="link-input" id="url" placeholder="paste a link and press enter" autocomplete="off">
+      <div class="add-status" id="status"></div>
     </div>
-
-    <div class="field">
-      <label for="password">password</label>
-      <input type="password" id="password" autocomplete="current-password">
-    </div>
-
-    <button id="submit">add</button>
-    <div class="status" id="status"></div>
-  </div>
+  </section>
 
   <script src="admin.js"></script>
 </body>

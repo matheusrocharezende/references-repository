@@ -1,54 +1,100 @@
-const urlInput = document.getElementById('url');
-const dateInput = document.getElementById('date');
+const loginScreen = document.getElementById('loginScreen');
+const addScreen = document.getElementById('addScreen');
 const passwordInput = document.getElementById('password');
-const submitBtn = document.getElementById('submit');
+const signInBtn = document.getElementById('signInBtn');
+const loginError = document.getElementById('loginError');
+const urlInput = document.getElementById('url');
 const statusEl = document.getElementById('status');
 
-const savedPassword = localStorage.getItem('admin_password');
-if (savedPassword) passwordInput.value = savedPassword;
+function showAddScreen() {
+  loginScreen.hidden = true;
+  addScreen.hidden = false;
+  urlInput.focus();
+}
 
-const now = new Date();
-dateInput.value = `${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+function showLoginScreen() {
+  localStorage.removeItem('admin_password');
+  addScreen.hidden = true;
+  loginScreen.hidden = false;
+  passwordInput.value = '';
+  passwordInput.focus();
+}
+
+async function signIn() {
+  const password = passwordInput.value;
+  if (!password) return;
+
+  signInBtn.disabled = true;
+  loginError.textContent = '';
+
+  try {
+    const res = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+
+    if (!res.ok) {
+      loginError.textContent = 'wrong password';
+      return;
+    }
+
+    localStorage.setItem('admin_password', password);
+    showAddScreen();
+  } catch {
+    loginError.textContent = 'network error';
+  } finally {
+    signInBtn.disabled = false;
+  }
+}
 
 function setStatus(text, kind) {
   statusEl.textContent = text;
-  statusEl.className = 'status' + (kind ? ` ${kind}` : '');
+  statusEl.className = 'add-status' + (kind ? ` ${kind}` : '');
 }
 
 async function addLink() {
   const url = urlInput.value.trim();
-  const password = passwordInput.value;
+  if (!url) return;
 
-  if (!url) return setStatus('cole uma url', 'error');
-  if (!password) return setStatus('digite a senha', 'error');
+  const password = localStorage.getItem('admin_password');
+  if (!password) return showLoginScreen();
 
-  submitBtn.disabled = true;
-  setStatus('adicionando…');
+  urlInput.disabled = true;
+  setStatus('adding…');
 
   try {
     const res = await fetch('/api/admin/links', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, date: dateInput.value.trim(), password })
+      body: JSON.stringify({ url, password })
     });
+
+    if (res.status === 401) return showLoginScreen();
+
     const data = await res.json();
 
     if (!res.ok) {
-      setStatus(data.error || 'erro ao adicionar', 'error');
+      setStatus(data.error || 'error', 'error');
       return;
     }
 
-    localStorage.setItem('admin_password', password);
-    setStatus(`adicionado — ${data.name}\ncategory: ${data.category || '—'}\n${data.description || ''}`, 'ok');
+    setStatus(`added — ${data.name}\n${data.category || '—'}`, 'ok');
     urlInput.value = '';
-    urlInput.focus();
   } catch {
-    setStatus('erro de rede', 'error');
+    setStatus('network error', 'error');
   } finally {
-    submitBtn.disabled = false;
+    urlInput.disabled = false;
+    urlInput.focus();
   }
 }
 
-submitBtn.addEventListener('click', addLink);
+signInBtn.addEventListener('click', signIn);
+passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addLink(); });
-passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') addLink(); });
+
+if (localStorage.getItem('admin_password')) {
+  showAddScreen();
+} else {
+  passwordInput.focus();
+}
