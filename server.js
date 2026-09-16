@@ -6,7 +6,13 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+// Vercel's runtime caches outgoing fetch() calls by default; disable it so
+// Supabase reads always hit the database instead of a stale response.
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+  global: {
+    fetch: (url, options = {}) => fetch(url, { ...options, cache: 'no-store' })
+  }
+});
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 let cache = { data: null, ts: 0 };
