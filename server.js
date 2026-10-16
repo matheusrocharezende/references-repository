@@ -67,6 +67,16 @@ app.get('/api/links', async (req, res) => {
   }
 });
 
+// ── Keep-alive: called daily by Vercel Cron so Supabase's free tier doesn't pause the project ──
+app.get('/api/keepalive', async (req, res) => {
+  const { error } = await supabase.from('links').select('url').limit(1);
+  if (error) {
+    console.error('[keepalive]', error.message);
+    return res.status(500).json({ ok: false });
+  }
+  res.json({ ok: true });
+});
+
 // ── Admin: verify password (gates the add-link screen client-side) ──
 app.post('/api/admin/verify', (req, res) => {
   if (!process.env.ADMIN_PASSWORD) {
