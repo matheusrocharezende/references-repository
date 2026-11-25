@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 3000;
 
 // Vercel's runtime caches outgoing fetch() calls by default; disable it so
 // Supabase reads always hit the database instead of a stale response.
-const noCacheFetch = (url, options = {}) => fetch(url, { ...options, cache: 'no-store' });
+const noCacheFetch = (url, options = {}) =>
+  fetch(url, { ...options, cache: 'no-store', signal: AbortSignal.timeout(5000) });
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
   global: { fetch: noCacheFetch }
@@ -23,24 +24,35 @@ const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
   : null;
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const RETRY_AFTER_FAILURE = 60 * 1000;
 let cache = { data: null, ts: 0 };
+
+// Last-known-good copy of the links, used when Supabase is unreachable (e.g. paused free project).
+const snapshot = require('./snapshot.json');
 
 // ── Fetch links from Supabase and cache ──
 async function getLinks() {
   const now = Date.now();
   if (cache.data && now - cache.ts < CACHE_TTL) return cache.data;
 
-  console.log('[supabase] fetching links…');
-  const { data, error } = await supabase
-    .from('links')
-    .select('category, date, name, url, preview, description')
-    .order('category', { ascending: true });
+  try {
+    console.log('[supabase] fetching links…');
+    const { data, error } = await supabase
+      .from('links')
+      .select('category, date, name, url, preview, description')
+      .order('category', { ascending: true });
+    if (error) throw error;
 
-  if (error) throw error;
-
-  cache = { data, ts: now };
-  console.log(`[supabase] ready — ${data.length} links loaded`);
-  return data;
+    cache = { data, ts: now };
+    console.log(`[supabase] ready — ${data.length} links loaded`);
+    return data;
+  } catch (err) {
+    console.error('[supabase] unreachable, serving fallback:', err.message);
+    const fallback = cache.data || snapshot;
+    // Back off so every request doesn't wait on a dead database.
+    cache = { data: fallback, ts: now - CACHE_TTL + RETRY_AFTER_FAILURE };
+    return fallback;
+  }
 }
 
 // ── Derive display name from URL (fallback when classifier can't reach the site) ──
@@ -67,14 +79,19 @@ app.get('/api/links', async (req, res) => {
   }
 });
 
-// ── Keep-alive: called daily by Vercel Cron so Supabase's free tier doesn't pause the project ──
+// ── Keep-alive: Vercel Cron hits this so Supabase's free tier doesn't pause the project.
+// Supabase wants "a few user requests per day", so each run makes several real queries.
 app.get('/api/keepalive', async (req, res) => {
-  const { error } = await supabase.from('links').select('url').limit(1);
-  if (error) {
-    console.error('[keepalive]', error.message);
-    return res.status(500).json({ ok: false });
+  try {
+    for (let i = 0; i < 8; i++) {
+      const { error } = await supabase.from('links').select('url, name').limit(5 + i);
+      if (error) throw error;
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[keepalive]', err.message);
+    res.status(500).json({ ok: false });
   }
-  res.json({ ok: true });
 });
 
 // ── Admin: verify password (gates the add-link screen client-side) ──

@@ -5,7 +5,8 @@
     { "src": "public/**", "use": "@vercel/static" }
   ],
   "crons": [
-    { "path": "/api/keepalive", "schedule": "0 12 * * *" }
+    { "path": "/api/keepalive?run=midnight", "schedule": "0 0 * * *" },
+    { "path": "/api/keepalive?run=noon", "schedule": "0 12 * * *" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "server.js" },
